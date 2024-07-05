@@ -1,0 +1,4 @@
+database:
+  - username: USERNAME
+  - password: PASSWORD
+  - connectString: (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = HOST)(PORT = 1521)) (CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = SERVICE_NAME)))

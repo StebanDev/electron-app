@@ -1,18 +1,24 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
+import { app, BrowserWindow, ipcMain } from "electron";
+import path from "path";
+import { parse } from "yaml";
+import fs from "fs";
+import * as oracle from "./oracle";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (require("electron-squirrel-startup")) {
   app.quit();
 }
-
+async function doQueryFn() {
+  const date = await oracle.doDateQuery();
+  return date;
+}
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -23,25 +29,47 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
+  const configFilePath = `${path.parse(app.getPath("exe")).dir}/config.yml`;
+  // const configFilePath = `${app.getAppPath()}/config.yml`;
+  console.log("configFilePath", configFilePath);
+  const file = fs.readFileSync(configFilePath, "utf8");
+  console.log("file", file);
+  const parsedConfig = parse(file);
+  console.log("parsed", parsedConfig);
+
+  const [{ username }, { password }, { connectString }] = parsedConfig.database;
+  console.log({ username, password, connectString });
+
+  ipcMain.on("createAppConnectionPool", async (event) => {
+    await oracle.createAppConnectionPool(username, password, connectString);
+    const webContents = event.sender;
+    const win = BrowserWindow.fromWebContents(webContents);
+    win.setTitle(`Electron Oracle Database Demo: ${username}@${connectString}`);
+  });
+
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on("ready", () => {
+  ipcMain.handle("doQuery", doQueryFn);
+
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {

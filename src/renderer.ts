@@ -26,6 +26,20 @@
  * ```
  */
 
-import './index.css';
+import "./index.css";
 
 console.log('👋 This message is being logged by "renderer.ts", included via Vite');
+
+const logonButton = document.getElementById("logon");
+const datebutton = document.getElementById("datebutton");
+const dateElement = document.getElementById("dateid");
+
+logonButton.addEventListener("click", async () => {
+  await window.electronAPI.createAppConnectionPool();
+  console.log("Connection pool created");
+});
+
+datebutton.addEventListener("click", async () => {
+  const currDate = await window.electronAPI.doQuery();
+  dateElement.innerText = currDate;
+});
