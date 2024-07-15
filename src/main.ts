@@ -1,6 +1,6 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import path from "path";
-import { parse } from "yaml";
+import YAML from "yaml";
 import fs from "fs";
 import * as oracle from "./oracle";
 
@@ -29,22 +29,35 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
-  const configFilePath = `${path.parse(app.getPath("exe")).dir}/config.yml`;
-  // const configFilePath = `${app.getAppPath()}/config.yml`;
-  console.log("configFilePath", configFilePath);
+  // const configFilePath = `${path.parse(app.getPath("exe")).dir}/config.yml`;
+  const configFilePath = `${app.getAppPath()}/config.yml`;
   const file = fs.readFileSync(configFilePath, "utf8");
-  console.log("file", file);
-  const parsedConfig = parse(file);
+  const parsedConfig = YAML.parse(file);
   console.log("parsed", parsedConfig);
 
-  const [{ username }, { password }, { connectString }] = parsedConfig.database;
-  console.log({ username, password, connectString });
+  // mainWindow.webContents.openDevTools();
+
+  setTimeout(() => mainWindow.webContents.send("load-config", parsedConfig), 500);
+
+  const { username, password, connectString } = parsedConfig.database;
 
   ipcMain.on("createAppConnectionPool", async (event) => {
     await oracle.createAppConnectionPool(username, password, connectString);
     const webContents = event.sender;
     const win = BrowserWindow.fromWebContents(webContents);
     win.setTitle(`Electron Oracle Database Demo: ${username}@${connectString}`);
+  });
+
+  ipcMain.on("saveSettings", async (event, username, password, connectString, kdiValues) => {
+    const dataIndicators = kdiValues.map((kdi: string[]) => {
+      const [name, sourceTable, sourceColumn, targetTable, targetColumn] = kdi;
+      return { name, sourceTable, sourceColumn, targetTable, targetColumn };
+    });
+    const newConfig = YAML.stringify({
+      database: { username, password, connectString },
+      dataIndicators,
+    });
+    fs.writeFileSync("config2.yml", newConfig, "utf-8");
   });
 
   // Open the DevTools.

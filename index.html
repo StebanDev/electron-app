@@ -6,13 +6,64 @@
   </head>
   <body>
     <img src="/src/kenvue-logo.svg" />
-    <div style="margin-top: 100px">
+    <!-- <div style="margin-top: 100px">
       <p>Welcome to your Kenvue app</p>
       <img width="256" src="/src/coming-soon.png" />
-    </div>
-    <button class="button" type="button" id="logon">Create connection pool</button>
+    </div> -->
+    <br />
+    <label for="username">User:</label>
+    <input type="text" name="username" id="username" />
+    <label for="password">Password:</label>
+    <input type="text" name="password" id="password" />
+    <label for="connectString">Connection string:</label>
+    <input type="text" name="connectString" id="connectString" />
+
+    <br />
+    <strong>Data Indicators</strong>
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" />
+    <label for="sourceTable">Source Table:</label>
+    <input type="text" name="sourceTable" id="sourceTable" />
+    <label for="sourceColumn">Source Column:</label>
+    <input type="text" name="sourceColumn" id="sourceColumn" />
+    <label for="targetTable">Target Table:</label>
+    <input type="text" name="targetTable" id="targetTable" />
+    <label for="targetColumn">Target Column:</label>
+    <input type="text" name="targetColumn" id="targetColumn" />
+    <br />
+    <button class="button" type="button" id="addKDI">Add KDI</button>
+    <br />
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Source Table</th>
+          <th>Source Column</th>
+          <th>Target Table</th>
+          <th>Target Column</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="kdi">
+        <!-- <tr>
+          <td>KDI #1</td>
+          <td>foo</td>
+          <td>bar</td>
+          <td>baz</td>
+          <td>bash</td>
+          <td><button>delete</button></td>
+        </tr> -->
+      </tbody>
+    </table>
+
+    <br />
+    <button class="button" type="button" id="saveSettings">Save settings</button>
+
+    <!-- <button class="button" type="button" id="logon">Create connection pool</button>
     <p>The date is: <strong id="dateid">???</strong></p>
-    <button class="button" type="button" id="datebutton">Query the current date</button>
+    <button class="button" type="button" id="datebutton">Query the current date</button> -->
+
     <script type="module" src="/src/renderer.ts"></script>
   </body>
 </html>
